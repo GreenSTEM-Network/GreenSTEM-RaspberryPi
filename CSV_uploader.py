@@ -4,6 +4,7 @@ import datetime
 linenum = 0
 
 while 1:
+    ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=9.2)
     now = datetime.datetime.now()
     analog = ser.readline()
     yr = now.year
@@ -25,8 +26,8 @@ while 1:
 
     if analog != "":
         log_file = open("pythonoutput.csv","w")
-        print lineprt
         log_file.write(lineprt)
         log_file.flush()
+	print lineprt
 
     linenum = linenum + 1
