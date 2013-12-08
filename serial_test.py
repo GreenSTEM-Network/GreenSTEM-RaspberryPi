@@ -3,29 +3,33 @@ import datetime
 import httplib2
 import simplejson as json
 
-h = httplib2.Http()
-headers = {'Content-Type': 'application/json'}
-server = "http://solarsunflower.herokuapp.com/dc/"
+def normalizeDigit(dgt):
+	if len(str(dgt)) == 1:
+		dgt = str('0' + str(dgt))
+	return dgt
 
-while 1:
+def generateTimestamp():
 	now = datetime.datetime.now()
-	yr = now.year
-	mon = now.month
-	dy = now.day
-	hr = now.hour
-	mnt = now.minute
-	sec = now.second
-	if len(str(sec)) == 1:
-		sec = str('0' + str(sec))
-	if len(str(dy)) == 1:
-		dy = str('0' + str(dy))
-	if len(str(mnt)) == 1:
-		mnt = str('0' + str(mnt))
+	yr = normalizeDigit(now.year)
+	mon = normalizeDigit(now.month)
+	dy = normalizeDigit(now.day)
+	hr = normalizeDigit(now.hour)
+	mnt = normalizeDigit(now.minute)
+	sec = normalizeDigit(now.second)
 
 	dte = str(yr) + '-' + str(mon) + '-' + str(dy)
 	tme = str(hr) + ':' + str(mnt) + ':' + str(sec)
 
 	dtme = dte + " " + tme
+
+	return dtme
+
+h = httplib2.Http()
+headers = {'Content-Type': 'application/json'}
+server = "http://solarsunflower.herokuapp.com/dc/"
+
+while 1:
+	dtme = generateTimestamp()
 
 	ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=9.3)
 	analog = ser.readlines()
