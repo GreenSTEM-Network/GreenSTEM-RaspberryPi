@@ -26,7 +26,7 @@ def generateTimestamp():
 
 h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
-server = "http://solarsunflower.herokuapp.com/dc/"
+server = "http://localhost:3000/dc/"
 
 while 1:
 	dtme = generateTimestamp()
