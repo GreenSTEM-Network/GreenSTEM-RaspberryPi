@@ -36,8 +36,15 @@ while 1:
     ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=9.3)
     analog = ser.readlines()
     sensorData = analog[1].rstrip('\r\n')
-    data = {'site_id': '1', 'node_readings': [{'id': '1', 'timestamp': str(dtme), 'channel': '001', 'soil1': str(
-        sensorData), 'soil2': '1.3', 'soil3': '1.4', 'temp': '58', 'voltage': '1.4'}]}
+    data = {'site_id': '1',
+            'node_readings': [{'id': '1',
+                               'timestamp': str(dtme),
+                               'channel': '001',
+                               'soil1': str(sensorData),
+                               'soil2': '1.3',
+                               'soil3': '1.4',
+                               'temp': '58',
+                               'voltage': '1.4'}]}
     print data
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
