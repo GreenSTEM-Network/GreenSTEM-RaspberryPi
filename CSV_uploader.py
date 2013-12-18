@@ -25,9 +25,9 @@ while 1:
         lineprt = dte + "," + tme + "," + analog
 
     if analog != "":
-        log_file = open("pythonoutput.csv","w")
+        log_file = open("pythonoutput.csv", "w")
         log_file.write(lineprt)
         log_file.flush()
-	print lineprt
+        print lineprt
 
     linenum = linenum + 1
