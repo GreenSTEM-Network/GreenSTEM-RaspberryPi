@@ -30,7 +30,9 @@ h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
 server = "http://solarsunflower.herokuapp.com/dc/"
 ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
-#grab and discard the initial data - the help text, etc.
+#grab and discard the first few data updates - the help text, etc. Maybe if we removed showHelp() from the JeeLink code this can be removed?
+analog = ser.readline()
+analog = ser.readline()
 analog = ser.readline()
 
 while 1:
@@ -44,9 +46,7 @@ while 1:
     #set up a loop for the total number of lines in the update. For each line...
     for x in range(0,NUMBER_OF_LINES):
       #read the line
-      analog = ser.readline()
-      #strip out the newlines
-      analog = analog.rstrip('\r\n')
+      analog = ser.readline().rstrip('\r\n')
       #add it to the list
       data.append(analog)
     #assign the data - this is based on the order defined in the JeeLink Receive sketch  
