@@ -30,11 +30,11 @@ h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
 server = "http://solarsunflower.herokuapp.com/dc/"
 ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
-#grab and discard the first few data updates - the help text, etc. Maybe if we removed showHelp() from the JeeLink code this can be removed?
-#still doesn't work perfectly - I have to run this, then kill it, then run it again. Weird.
+#try to grab and discard the first few data updates - the help text, etc.
+#Still doesn't work. We need to remove all the extraneous Serial.println() statements from the JeeLink code.
 analog = ser.readline()
 analog = ser.readline()
-analog = ser.readline()
+
 
 while 1:
   #Set up default variables for each pass
