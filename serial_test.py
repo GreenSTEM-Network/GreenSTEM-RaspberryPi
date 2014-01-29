@@ -28,21 +28,34 @@ def generateTimestamp():
 
 h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
-#server = "http://localhost:3000/dc/"
 server = "http://solarsunflower.herokuapp.com/dc/"
+ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
+#grab and discard the initial data - the help text, etc.
+analog = ser.readline()
 
 while 1:
+  #Set up default variables for each pass
+    #for storing extracted data from JeeLink
     data = []
+    #constant representing number of lines sent each update
     NUMBER_OF_LINES = 6
+    #generate timestamp
     dtme = generateTimestamp()
-    ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
+    #set up a loop for the total number of lines in the update. For each line...
     for x in range(0,NUMBER_OF_LINES):
+      #read the line
       analog = ser.readline()
+      #strip out the newlines
       analog = analog.rstrip('\r\n')
+      #add it to the list
       data.append(analog)
-    soil1 = data[1]
-    soil2 = data[2]
-    soil3 = data[3]
+    #assign the data - this is based on the order defined in the JeeLink Receive sketch  
+    soil1 = data[0]
+    soil2 = data[1]
+    soil3 = data[2]
+    temp = data[3]
+    voltage = data[4]
+    #construct JSON object
     data = {'site_id': '1',
             'node_readings': [{'id': '1',
                                'timestamp': str(dtme),
@@ -50,8 +63,8 @@ while 1:
                                'soil1': str(soil1),
                                'soil2': str(soil2),
                                'soil3': str(soil3),
-                               'temp': '58',
-                               'voltage': '1.4'}]}
+                               'temp': str(temp),
+                               'voltage': str(voltage)}]}
     print data
 #    body = json.dumps(data)
 #    resp, content = h.request(server, "POST", body=body, headers=headers)
