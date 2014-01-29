@@ -31,6 +31,7 @@ headers = {'Content-Type': 'application/json'}
 server = "http://solarsunflower.herokuapp.com/dc/"
 ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
 #grab and discard the first few data updates - the help text, etc. Maybe if we removed showHelp() from the JeeLink code this can be removed?
+#still doesn't work perfectly - I have to run this, then kill it, then run it again. Weird.
 analog = ser.readline()
 analog = ser.readline()
 analog = ser.readline()
