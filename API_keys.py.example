@@ -1,0 +1,4 @@
+# API keys etc.
+# Add them below and they won't be included in the git repo
+# This is for a (relatively low) level of security
+API_key = ''

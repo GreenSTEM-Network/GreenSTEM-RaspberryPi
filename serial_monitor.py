@@ -3,9 +3,8 @@ import datetime
 import httplib2
 import urllib
 import simplejson as json
+import API_keys
 
-zipCode = '19102'
-API_key = '3545f6916c462e0c8f2e273c87c09fd4'
 h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
 server = "http://solarsunflower.herokuapp.com/dc/"
@@ -81,8 +80,8 @@ while 1:
     print packagedData
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
-    print resp
-    print '\n\n\n\n'
-    print '------------'
-    print '\n\n\n\n'
-    print content
+    # print resp
+    # print '\n\n\n\n'
+    # print '------------'
+    # print '\n\n\n\n'
+    # print content
