@@ -1,14 +1,50 @@
 import serial
 import datetime
 import httplib2
-import urllib
+import sys
 import simplejson as json
 import API_keys
 
+print str(sys.argv)
+
 h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
-server = "http://solarsunflower.herokuapp.com/dc/"
-ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
+port = 'ttyUSB0'
+server = 'http://solarsunflower.herokuapp.com/dc/'
+
+#Look for system argument containing 'http'
+#If an argument has it, set that argument to be the value
+#for the server
+for argument in sys.argv:
+  if 'http' in argument:
+    server = argument
+
+#Same with 'USB' for specifying the port
+for argument in sys.argv:
+  if 'USB' in argument:
+    port = argument
+
+#!!!! Eventually I'd like to change the above to something like this, but it's not working
+#
+# if any('http' in argument for argument in sys.argv):
+#   server = argument
+# else:
+#   server = 'ttyUSB0'
+#   print 'no server specified, using ' + server
+
+# if any('tty' in argument for argument in sys.argv):
+#   port = argument
+# else:
+#   port = 'ttyUSB0'
+#   print 'no port specified, using ' + port
+
+
+#Try to open port, default to ttyUSB0 if it fails
+try:
+  ser = serial.Serial('/dev/'+port, 57600, timeout=10)
+except serial.SerialException:
+  print 'connection failed, using ttyUSB0'
+  ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
 
 def normalizeDigit(dgt):
     if len(str(dgt)) == 1:
@@ -75,8 +111,8 @@ while 1:
                                'soil2': str(data['soil2']),
                                'soil3': str(data['soil3']),
                                'temp': str(data['temp']),
-                               'voltage': str(data['voltage'])}]}#,
-                               #'rainfall':str(data['rainfall'])}]}
+                               'voltage': str(data['voltage']),
+                               'rainfall':str(data['rainfall'])}]}
     print packagedData
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)

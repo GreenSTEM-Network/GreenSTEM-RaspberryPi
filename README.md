@@ -1,7 +1,12 @@
 RaspberryPi
 ===========
 
-Code for accepting data from the sensors, packaging it, and uploading it to the server. 
+Code for accepting data from the sensors, packaging it, and uploading it to the server.
+
+Launch with the command 'python serial_monitor.py <USB-PORT-OF-JEELINK> <server>
+
+The USB Port will default to 'ttyUSB0' if none is specified or the USB port specified is invalid.
+The server will default to 'http://solarsunflower.herokuapp.com/dc/' if none is specified 
 
 
 Useful Pi Links
