@@ -51,6 +51,13 @@ def normalizeDigit(dgt):
         dgt = str('0' + str(dgt))
     return dgt
 
+def serverResponse(resp, content):
+    print resp
+    print '\n\n\n\n'
+    print '------------'
+    print '\n\n\n\n'
+    print content
+
 def getData(ser):
     serialData = ser.readline().replace('\x00','').rstrip('\r\n').split(',')
     return serialData
@@ -123,8 +130,4 @@ while 1:
     print packagedData
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
-    # print resp
-    # print '\n\n\n\n'
-    # print '------------'
-    # print '\n\n\n\n'
-    # print content
+    serverResponse(resp, content)
