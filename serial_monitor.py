@@ -63,7 +63,14 @@ def getRainfall():
   response, content = http.request(url_base+url, 'GET', headers=rainHeaders, body='')
   #print str(response) + '\n'
   content_dict = json.loads(content)
-  return content_dict['rain']['1h']
+  print content_dict['rain']
+  try:
+    return content_dict['rain']['1h']
+  except KeyError:
+    try:
+      return content_dict['rain']['3h']
+    except KeyError:
+      return 'not found'
 
 def assignData(analog):
     nodeData = {}
