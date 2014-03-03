@@ -70,7 +70,6 @@ def getRainfall():
   response, content = http.request(url_base+url, 'GET', headers=rainHeaders, body='')
   #print str(response) + '\n'
   content_dict = json.loads(content)
-  print content_dict['rain']
   try:
     return content_dict['rain']['1h']
   except KeyError:
@@ -130,4 +129,4 @@ while 1:
     print packagedData
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
-    serverResponse(resp, content)
+    #serverResponse(resp, content)
