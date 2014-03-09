@@ -11,6 +11,7 @@ h = httplib2.Http()
 headers = {'Content-Type': 'application/json'}
 port = 'ttyUSB0'
 server = 'http://solarsunflower.herokuapp.com/dc/'
+site_id = '1'
 
 #Look for system argument containing 'http'
 #If an argument has it, set that argument to be the value
@@ -51,10 +52,24 @@ def normalizeDigit(dgt):
         dgt = str('0' + str(dgt))
     return dgt
 
-def serverResponse(resp, content):
+def serverResponse(packagedData, body, headers, resp, content):
+    print "Packaged Data:\n"
+    print packagedData
+    print '\n\n\n\n'
+    print '------------'
+    print "Body:\n"
+    print body
+    print '\n\n\n\n'
+    print '------------'
+    print "Headers:\n"
+    print headers
+    print '\n\n\n\n'
+    print '------------'
+    print "Response:\n"
     print resp
     print '\n\n\n\n'
     print '------------'
+    print "Content:\n"
     print '\n\n\n\n'
     print content
 
@@ -62,25 +77,27 @@ def getData(ser):
     serialData = ser.readline().replace('\x00','').rstrip('\r\n').split(',')
     return serialData
 
-def getRainfall():
-  http = httplib2.Http()
-  url_base = 'http://api.openweathermap.org/data/2.5/weather'
-  url = '?q=Philadelphia,PA&APPID=3545f6916c462e0c8f2e273c87c09fd4'
-  rainHeaders = {'Content-type': 'application/x-www-form-urlencoded'}
-  response, content = http.request(url_base+url, 'GET', headers=rainHeaders, body='')
-  #print str(response) + '\n'
-  content_dict = json.loads(content)
-  try:
-    return content_dict['rain']['1h']
-  except KeyError:
-    try:
-      return content_dict['rain']['3h']
-    except KeyError:
-      return 'not found'
+# not using rainfall on the RasPi side for now. Will eventually be deleted.
+# def getRainfall():
+  # http = httplib2.Http()
+  # url_base = 'http://api.openweathermap.org/data/2.5/weather'
+  # url = '?q=Philadelphia,PA&APPID=3545f6916c462e0c8f2e273c87c09fd4'
+  # rainHeaders = {'Content-type': 'application/x-www-form-urlencoded'}
+  # response, content = http.request(url_base+url, 'GET', headers=rainHeaders, body='')
+  # #print str(response) + '\n'
+  # content_dict = json.loads(content)
+  # try:
+  #   return content_dict['rain']['1h']
+  # except KeyError:
+  #   try:
+  #     return content_dict['rain']['3h']
+  #   except KeyError:
+  #     return 'not found'
 
 def assignData(analog):
     nodeData = {}
-    nodeData['rainfall'] = getRainfall()
+    nodeData['rainfall'] = ''
+    # nodeData['rainfall'] = getRainfall()
     try:
       nodeData['soil1'] = analog[0]
       nodeData['soil2'] = analog[1]
@@ -116,17 +133,15 @@ while 1:
       continue
     #construct JSON object
     else:
-      packagedData = {'site_id': '1',
-            'node_readings': [{'id': '1',
-                               'timestamp': str(dtme),
-                               'channel': '001',
-                               'soil1': str(data['soil1']),
-                               'soil2': str(data['soil2']),
-                               'soil3': str(data['soil3']),
+      packagedData = {'site_id': str(site_id),
+                               'node_readings': [{
+                               'rainfall':str(data['rainfall']),
                                'temp': str(data['temp']),
+                               'soil2': str(data['soil2']),
+                               'soil1': str(data['soil1']),
+                               'soil3': str(data['soil3']),
                                'voltage': str(data['voltage']),
-                               'rainfall':str(data['rainfall'])}]}
-    print packagedData
+                               'id': '1'}]}
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
-    #serverResponse(resp, content)
+    serverResponse(packagedData, body, headers, resp, content)
