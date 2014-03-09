@@ -144,4 +144,5 @@ while 1:
                                'id': '1'}]}
     body = json.dumps(data)
     resp, content = h.request(server, "POST", body=body, headers=headers)
-    serverResponse(packagedData, body, headers, resp, content)
+    #Uncomment to receive debugging data
+    #serverResponse(packagedData, body, headers, resp, content)
