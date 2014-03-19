@@ -1,14 +1,19 @@
 import serial
 import datetime
 import httplib2
+import urllib
 import sys
 import simplejson as json
 import API_keys
 
-print str(sys.argv)
-
+#construct HTTP object
 h = httplib2.Http()
+
+#Set defaults for HTTP connection (these won't change unless we rearchitect our system to do actual POST requests)
 headers = {'Content-Type': 'application/json'}
+body = ''
+
+#defaults for server, USB port, and site_id
 port = 'ttyUSB0'
 server = 'http://solarsunflower.herokuapp.com/dc/'
 site_id = '1'
@@ -20,7 +25,9 @@ for argument in sys.argv:
   if 'http' in argument:
     server = argument
 
-#Same with 'USB' for specifying the port
+#Look for system argument containing 'USB'
+#If an argument has it, set that argument to be the value
+#for the USB port
 for argument in sys.argv:
   if 'USB' in argument:
     port = argument
@@ -40,64 +47,48 @@ for argument in sys.argv:
 #   print 'no port specified, using ' + port
 
 
-#Try to open port, default to ttyUSB0 if it fails
+#Try to open port indicated by parameter
 try:
   ser = serial.Serial('/dev/'+port, 57600, timeout=10)
+#default to ttyUSB0 if it fails
 except serial.SerialException:
   print 'connection failed, using ttyUSB0'
   ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=10)
 
+#normalizes digits to be two characters, prepending 0 if necessary.
 def normalizeDigit(dgt):
     if len(str(dgt)) == 1:
         dgt = str('0' + str(dgt))
     return dgt
 
-def serverResponse(packagedData, body, headers, resp, content):
-    print "Packaged Data:\n"
+#print out a bunch of network data so we can debug
+def serverResponse(packagedData, body, headers, resp, content, server_url):
+    print "Packaged Data: "
     print packagedData
-    print '\n\n\n\n'
     print '------------'
-    print "Body:\n"
-    print body
-    print '\n\n\n\n'
+    print "URL: "
+    print server_url
     print '------------'
-    print "Headers:\n"
+    print "Headers: "
     print headers
-    print '\n\n\n\n'
     print '------------'
-    print "Response:\n"
+    print "Response: "
     print resp
-    print '\n\n\n\n'
     print '------------'
-    print "Content:\n"
-    print '\n\n\n\n'
+    print "Content: "
     print content
 
+#normalize data for use in POST - remove characters that are not useful, 
+#get rid of newlines, split the remainder into an array
 def getData(ser):
     serialData = ser.readline().replace('\x00','').rstrip('\r\n').split(',')
     return serialData
 
-# not using rainfall on the RasPi side for now. Will eventually be deleted.
-# def getRainfall():
-  # http = httplib2.Http()
-  # url_base = 'http://api.openweathermap.org/data/2.5/weather'
-  # url = '?q=Philadelphia,PA&APPID=3545f6916c462e0c8f2e273c87c09fd4'
-  # rainHeaders = {'Content-type': 'application/x-www-form-urlencoded'}
-  # response, content = http.request(url_base+url, 'GET', headers=rainHeaders, body='')
-  # #print str(response) + '\n'
-  # content_dict = json.loads(content)
-  # try:
-  #   return content_dict['rain']['1h']
-  # except KeyError:
-  #   try:
-  #     return content_dict['rain']['3h']
-  #   except KeyError:
-  #     return 'not found'
-
+#take the data from the serial port and store it in a dictionary
+#this makes parsing it into a set of URL parameters easier 
 def assignData(analog):
     nodeData = {}
     nodeData['rainfall'] = ''
-    # nodeData['rainfall'] = getRainfall()
     try:
       nodeData['soil1'] = analog[0]
       nodeData['soil2'] = analog[1]
@@ -108,6 +99,7 @@ def assignData(analog):
       nodeData = {}
     return nodeData
 
+#generate a time stamp
 def generateTimestamp():
     now = datetime.datetime.now()
     yr = normalizeDigit(now.year)
@@ -124,25 +116,29 @@ def generateTimestamp():
 
     return dtme
 
+#after everything, set up a repeating loop for getting and POSTing data
 while 1:
     dtme = generateTimestamp()
+    #get data from the serial port
     analog = getData(ser)
+    #parse the data and set it up in a dictionary
     data = assignData(analog)
-    #Check nodeData for values
+    #If the data hasn't come yet, skip the rest and start all over
     if data == {}:
       continue
-    #construct JSON object
+    #construct URL parameters for POSTing, using data taken from the serial port
     else:
-      packagedData = {'site_id': str(site_id),
-                               'node_readings': [{
-                               'rainfall':str(data['rainfall']),
-                               'temp': str(data['temp']),
-                               'soil2': str(data['soil2']),
-                               'soil1': str(data['soil1']),
-                               'soil3': str(data['soil3']),
-                               'voltage': str(data['voltage']),
-                               'id': '1'}]}
-    body = json.dumps(data)
+      packagedData = [{"rainfall":str(data["rainfall"]),
+                        "temp": str(data["temp"]),
+                        "soil2": str(data["soil2"]),
+                        "soil1": str(data["soil1"]),
+                        "soil3": str(data["soil3"]),
+                        "voltage": str(data["voltage"]),
+                        "id": "1"}]
+    
+    #construct the complete URL with parameters.
+    server_url = server + '?node_readings=' + urllib.quote(str(packagedData).replace('\'','\"')) + "&site_id="+site_id
+    #send the POST request
     resp, content = h.request(server, "POST", body=body, headers=headers)
     #Uncomment to receive debugging data
-    #serverResponse(packagedData, body, headers, resp, content)
+    #serverResponse(packagedData, body, headers, resp, content, server_url)
